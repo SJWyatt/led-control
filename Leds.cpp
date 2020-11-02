@@ -46,6 +46,9 @@ void Leds::refresh() {
             case Wave:
                 this->wave();
                 break;
+            case Bounce:
+                this->bounce();
+                break;
             case Fade:
                 this->fade();
                 break;
@@ -85,6 +88,9 @@ void Leds::redraw() {
             break;
         case Wave:
             this->init_wave();
+            break;
+        case Bounce:
+            this->bounce();
             break;
         case Fade:
             this->fade();
@@ -323,4 +329,58 @@ void Leds::ping_pong() {
         }
     }
     FastLED.show();
+}
+
+void Leds::bounce(bool alternate) {
+    for(size_t i = 0; i <= ceil(NUM_LEDS/(float)(length_)); i++) {
+        int16_t val = (i * (length_) - index_) - 1; //original direction
+        int16_t rev = i * (length_) - (length_ - index_); // the reverse direction
+
+        if(i % 2 == 0) {
+            // all the even LED's
+            if(direction_) {
+                this->set_led(CRGB::Black, val + 1); // turn off led
+                this->set_led(primary_, val);
+            } else {
+                this->set_led(CRGB::Black, val - 1); // turn off led
+
+                if(alternate)
+                    this->set_led(secondary_, val);
+                else
+                    this->set_led(primary_, val);
+            }
+        } else {
+            // all the odd LED's
+            if(direction_) {
+                this->set_led(CRGB::Black, rev - 1); // turn off led
+                this->set_led(secondary_, rev);
+            } else {
+                this->set_led(CRGB::Black, rev + 1); // turn off led
+                
+                if(alternate)
+                    this->set_led(primary_, rev);
+                else
+                    this->set_led(secondary_, rev);
+            }
+            
+        }
+    }
+    FastLED.show();
+
+    // increment/decrement (or change direction)
+    if (direction_) {
+        if(index_ < (length_-1)) {
+            index_++;
+        } else {
+            direction_ = false;
+            index_--;
+        }
+    } else {
+        if(index_ > 0) {
+            index_--;
+        } else {
+            direction_ = true;
+            index_++;
+        }
+    }
 }

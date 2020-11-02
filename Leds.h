@@ -12,7 +12,7 @@
 
 #define LED_PIN     3
 #define NUM_LEDS    300
-#define MAX_BRIGHTNESS 100
+#define MAX_BRIGHTNESS 250
 #define MAX_DELAY 250
 
 typedef enum {Off,
@@ -20,6 +20,7 @@ typedef enum {Off,
               Color,
               Snake,
               Wave,
+              Bounce,
               Fade,
               Flash,
               PingPong
@@ -75,6 +76,8 @@ class Leds {
 
         void init_pingpong();
         void ping_pong();
+
+        void bounce(bool alternate=false);
 
         LedState state_ = Off;
         uint64_t last_updated = 0;
