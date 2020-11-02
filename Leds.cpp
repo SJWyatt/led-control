@@ -295,24 +295,32 @@ void Leds::flash(bool init) {
 }
 
 void Leds::init_pingpong() {
-    this->set_range(primary_, index_, index_ + length_);
+    this->range(primary_, index_, index_ + length_);
     FastLED.show();
 }
 
 void Leds::ping_pong() {
-    this->set_led(CRGB::Black, index_ - 1);
-    this->set_led(primary_, index_ + length_);
-    FastLED.show();
-    
-    if(direction_ && index_ + length_ < NUM_LEDS) {
-        index_++;
-    } else if(direction_ && index_ >= NUM_LEDS) {
-        direction_ = false;
-        index_--;
-    } else if(!direction_ && index_ > 0) {
-        index_--;
+    if (direction_) {
+        this->set_led(CRGB::Black, index_ - 1);
+        this->set_led(primary_, index_ + length_);
+
+        // increment (or change direction)
+        if (index_ + length_ < NUM_LEDS) {
+            index_++;
+        } else {
+            direction_ = false;
+            index_--;
+        }
     } else {
-        direction_ = true;
-        index_++;
+        this->set_led(primary_, index_);
+        this->set_led(CRGB::Black, index_ + length_);
+
+        if(index_ > 0) {
+            index_--;
+        } else {
+            direction_ = true;
+            index_++;
+        }
     }
+    FastLED.show();
 }
