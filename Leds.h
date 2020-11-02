@@ -21,7 +21,8 @@ typedef enum {Off,
               Snake,
               Wave,
               Fade,
-              Flash
+              Flash,
+              PingPong
               } LedState; // function to display on led's
 
 class Leds {
@@ -71,6 +72,9 @@ class Leds {
         void fade(); // fade from one color to another.
 
         void flash(bool init=false); // flash two different colors
+
+        void init_pingpong();
+        void ping_pong();
 
         LedState state_ = Off;
         uint64_t last_updated = 0;

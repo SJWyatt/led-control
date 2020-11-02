@@ -52,6 +52,9 @@ void Leds::refresh() {
             case Flash:
                 this->flash();
                 break;
+            case PingPong:
+                this->ping_pong();
+                break;
             case Off:
             case White:
             case Color:
@@ -88,6 +91,9 @@ void Leds::redraw() {
             break;
         case Flash:
             this->flash(true);
+        case PingPong:
+            this->init_pingpong();
+            break;
         default:
             // do nothing
             break;
@@ -285,5 +291,28 @@ void Leds::flash(bool init) {
         } else {
             index_ = 0;
         }
+    }
+}
+
+void Leds::init_pingpong() {
+    this->set_range(primary_, index_, index_ + length_);
+    FastLED.show();
+}
+
+void Leds::ping_pong() {
+    this->set_led(CRGB::Black, index_ - 1);
+    this->set_led(primary_, index_ + length_);
+    FastLED.show();
+    
+    if(direction_ && index_ + length_ < NUM_LEDS) {
+        index_++;
+    } else if(direction_ && index_ >= NUM_LEDS) {
+        direction_ = false;
+        index_--;
+    } else if(!direction_ && index_ > 0) {
+        index_--;
+    } else {
+        direction_ = true;
+        index_++;
     }
 }
