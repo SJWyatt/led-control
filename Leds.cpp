@@ -301,6 +301,7 @@ void Leds::flash(bool init) {
 }
 
 void Leds::init_pingpong() {
+    this->black();
     this->range(primary_, index_, index_ + length_);
     FastLED.show();
 }

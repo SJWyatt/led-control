@@ -4,7 +4,13 @@ Interface::Interface(Keypad* lcd) {
     lcd_ = lcd;
 }
 
+Interface::Interface(Keypad* lcd, Leds* lights) {
+    lcd_ = lcd;
+    lights_ = lights;
+}
+
 void Interface::draw() {
+    lights_->refresh();
     switch (state_) {
         case Menu:
             menu();
@@ -82,7 +88,7 @@ void Interface::options() {
 uint8_t Interface::next_option() {
     curOption_++;
 
-    if (curOption_ >= 7) {
+    if (curOption_ >= numOptions_) {
         curOption_ = 0;
     }
 
@@ -95,7 +101,7 @@ uint8_t Interface::prev_option() {
     if (curOption_ > 0) {
         curOption_--;
     } else {
-        curOption_ = 6;
+        curOption_ = numOptions_ - 1;
     }
 
     options();
@@ -104,7 +110,7 @@ uint8_t Interface::prev_option() {
 }
 
 uint8_t Interface::set_option(uint8_t option) {
-    if (option > 0 && option < 7) {
+    if (option > 0 && option < (numOptions_-1)) {
         curOption_ = option;
     }
 
@@ -131,7 +137,7 @@ void Interface::settings() {
 uint8_t Interface::next_setting() {
     curSetting_++;
 
-    if (curSetting_ >= 4) {
+    if (curSetting_ >= numSettings_) {
         curSetting_ = 0;
     }
 
@@ -144,7 +150,7 @@ uint8_t Interface::prev_setting() {
     if (curSetting_ > 0) {
         curSetting_--;
     } else {
-        curSetting_ = 4;
+        curSetting_ = numSettings_ - 1;
     }
 
     settings();
@@ -153,7 +159,7 @@ uint8_t Interface::prev_setting() {
 }
 
 uint8_t Interface::set_setting(uint8_t setting) {
-    if (setting > 0 && setting < 7) {
+    if (setting > 0 && setting < (numSettings_-1)) {
         curSetting_ = setting;
     }
 
@@ -168,6 +174,7 @@ void Interface::select() {
             if(curOption_ > 0 && curOption_ < 4) {
                 state_ = Settings;
             }
+            lights_->set_state(ledOptions_[curOption_]);
             break;
         case Settings:
             
@@ -197,6 +204,7 @@ void Interface::up() {
             break;
         case Settings:
             state_ = Menu;
+            prevOption_ = curOption_ - 1; // to force refresh
             break;
         default:
             break;
