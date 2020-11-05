@@ -15,7 +15,7 @@ Leds::Leds(uint16_t brightness, uint16_t length, uint16_t delay) {
 
 void Leds::setup() {
     // Setup LED's
-    FastLED.addLeds<WS2812, LED_PIN, GRB>(this->leds, NUM_LEDS);
+    FastLED.addLeds<WS2812, LED_PIN, GRB>(leds_, NUM_LEDS);
     FastLED.setBrightness(brightness_);
 
     // Start with LED's off
@@ -58,6 +58,9 @@ void Leds::refresh() {
             case PingPong:
                 this->ping_pong();
                 break;
+            case Rainbow:
+                this->rainbow();
+                break;
             case Off:
             case White:
             case Color:
@@ -99,6 +102,9 @@ void Leds::redraw() {
             this->flash(true);
         case PingPong:
             this->init_pingpong();
+            break;
+        case Rainbow:
+            this->rainbow();
             break;
         default:
             // do nothing
@@ -162,7 +168,7 @@ void Leds::set_led(CRGB col, uint16_t idx) {
     if(idx >= NUM_LEDS || idx < 0) { // error checking
         return;
     } else {
-        this->leds[idx] = col;
+        leds_[idx] = col;
     }
 }
 
@@ -383,5 +389,19 @@ void Leds::bounce(bool alternate) {
             direction_ = true;
             index_++;
         }
+    }
+}
+
+void Leds::rainbow() {
+    uint16_t size = 1;
+    for (size_t i = 0; i < NUM_LEDS; i++) {
+        leds_[i] = CHSV(i - (index_ * (2 * size)), 255, 255); /* The higher the value 4 the less fade there is and vice versa */ 
+    }
+    FastLED.show();
+
+    if(index_ < (255/size)) {
+        index_++;
+    } else {
+        index_ = 0;
     }
 }
