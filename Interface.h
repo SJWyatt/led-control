@@ -17,10 +17,18 @@ using namespace std;
 
 #define ARR_DELAY 1000
 
-typedef enum {Nothing,
-              Menu,
-              Settings
-              } DisplayMode; // state_s
+typedef enum {
+    Nothing,
+    Menu,
+    Settings
+} DisplayMode; // state_s
+
+typedef enum {
+    All,
+    Primary,
+    Brightness,
+    None
+} SettingType;
 
 class Interface {
     public:
@@ -42,12 +50,17 @@ class Interface {
         uint8_t prev_setting();
         uint8_t set_setting(uint8_t option);
 
+        void brightness();
+
         void select();
         void up();
         void down();
         void next();
         void prev();
         
+    protected:
+        void check_setting();
+
     private:
         DisplayMode lastState_ = Nothing;
         DisplayMode state_ = Menu;
@@ -55,9 +68,10 @@ class Interface {
 
         Leds* lights_;
 
-        static const uint8_t numOptions_ = 9;
-        String options_[numOptions_] = {"Wave", "Snake", "Fade", "Ping Pong", "Bounce", "Flash", "Color", "White", "Off"};
-        LedState ledOptions_[numOptions_] = {Wave, Snake, Fade, PingPong, Bounce, Flash, Color, White, Off};
+        static const uint8_t numOptions_ = 10;
+        String options_[numOptions_] =          {"Wave", "Snake", "Fade", "Ping Pong", "Bounce", "Flash", "Rainbow", "Color", "White",    "Off"};
+        LedState ledOptions_[numOptions_] =     { Wave,   Snake,   Fade,   PingPong,    Bounce,   Flash,   Rainbow,   Color,   White,      Off };
+        SettingType stateSettings_[numOptions_] = {All,   All,     All,    All,         All,      All,     All,       Primary, Brightness, None};
         uint8_t curOption_ = 0;
         uint8_t prevOption_ = numOptions_ - 1;
 

@@ -47,7 +47,7 @@ DisplayMode Interface::menu() {
         lastState_ = state_;
     }
 
-    return this->state_;
+    return state_;
 }
 
 void Interface::arrows() {
@@ -121,6 +121,8 @@ uint8_t Interface::set_option(uint8_t option) {
 
 void Interface::settings() {
     if (prevSetting_ != curSetting_) {
+        check_setting(); //change setting if invalid
+
         // clear this section of the lcd
         lcd_->setCursor(2, 1);
         for(size_t i = 0; i < 14; i++) {
@@ -141,6 +143,7 @@ uint8_t Interface::next_setting() {
         curSetting_ = 0;
     }
 
+    check_setting(); //change setting if invalid
     settings();
 
     return curSetting_;
@@ -153,6 +156,7 @@ uint8_t Interface::prev_setting() {
         curSetting_ = numSettings_ - 1;
     }
 
+    check_setting(); // change setting if invalid.
     settings();
 
     return curSetting_;
@@ -168,16 +172,37 @@ uint8_t Interface::set_setting(uint8_t setting) {
     return curSetting_;
 }
 
+void Interface::check_setting() {
+    switch(stateSettings_[curOption_]) {
+        case All: // Do nothing, all settings are displayed
+            break;
+        case Brightness: //Only show brightness setting
+            curSetting_ = 0; // TODO: change from static number.
+            break;
+        case Primary:
+            curSetting_ = 2;
+            break;
+        case None: // Nothing should be displayed.
+            // TODO: check that this is an unreachable state
+            break;
+        default:
+            break;
+    }
+
+}
+
 void Interface::select() {
     switch (state_) {
         case Menu:
-            if(curOption_ > 0 && curOption_ < 4) {
+            // Serial.println("Sel - (in Menu)");
+            if(stateSettings_[curOption_] != None) {
                 state_ = Settings;
+                prevSetting_ = curSetting_ - 1; // to force refresh
             }
             lights_->set_state(ledOptions_[curOption_]);
             break;
         case Settings:
-            
+            // Serial.println("Sel - (in Sett)");
             break;
         default:
             break;
@@ -187,10 +212,10 @@ void Interface::select() {
 void Interface::down() {
     switch (state_) {
         case Menu:
-
+            // Serial.println("Dn - (in Menu)");
             break;
         case Settings:
-            
+            // Serial.println("Dn - (in Sett)");
             break;
         default:
             break;
@@ -200,9 +225,10 @@ void Interface::down() {
 void Interface::up() {
     switch (state_) {
         case Menu:
-
+            // Serial.println("Up - (in Menu)");
             break;
         case Settings:
+            // Serial.println("Up - (in Sett)");
             state_ = Menu;
             prevOption_ = curOption_ - 1; // to force refresh
             break;
@@ -215,8 +241,10 @@ void Interface::next() {
     switch (state_) {
         case Menu:
             next_option();
+            // Serial.println("Nxt - (in Menu)");
             break;
         case Settings:
+            // Serial.println("Nxt - (in Sett)");
             next_setting();
             break;
         default:
@@ -227,9 +255,11 @@ void Interface::next() {
 void Interface::prev() {
     switch (state_) {
         case Menu:
+            // Serial.println("Prv - (in Menu)");
             prev_option();
             break;
         case Settings:
+            // Serial.println("Prv - (in Sett)");
             prev_setting();
             break;
         default:
