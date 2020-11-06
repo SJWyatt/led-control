@@ -65,6 +65,9 @@ void Leds::refresh() {
             case Random:
                 this->random_colors();
                 break;
+            case Gravity:
+                this->gravity();
+                break;
             case Off:
             case White:
             case Color:
@@ -112,6 +115,9 @@ void Leds::redraw() {
             break;
         case Random:
             this->random_colors();
+            break;
+        case Gravity:
+            this->init_gravity();
             break;
         default:
             // do nothing
@@ -440,4 +446,72 @@ void Leds::random_colors() {
         leds_[i] = colors[random(0,10)];
     }
     FastLED.show();
+}
+
+void Leds::init_gravity() {
+    // Clear the led strip.
+    black();
+
+    float Gravity = -9.81;
+    int StartHeight = 1;
+    float ImpactVelocityStart = sqrt(-2 * Gravity * StartHeight);
+    
+    for (int i = 0 ; i < ballCount_; i++) {  
+        clockTimeSinceLastBounce_[i] = millis();
+        height_[i] = StartHeight;
+        impactVelocity_[i] = ImpactVelocityStart;
+        timeSinceLastBounce_[i] = 0;
+    }
+}
+
+void Leds::gravity() {
+    // constant variables for calculations
+    float Gravity = -9.81;
+    int StartHeight = 1;
+    float ImpactVelocityStart = sqrt( -2 * Gravity * StartHeight );
+
+    float Dampening[ballCount_];
+    for (int i = 0; i < ballCount_; i++) {
+        // The damping to place on each ball
+        Dampening[i] = 0.90 - float(i)/pow(ballCount_,2);
+    }
+
+    // Change position of each ball
+    for (int i = 0; i < ballCount_; i++) {
+        timeSinceLastBounce_[i] =  millis() - clockTimeSinceLastBounce_[i];
+
+        // set height based on speed and time (with gravity's acceleration)
+        height_[i] = 0.5 * Gravity * pow( timeSinceLastBounce_[i]/1000 , 2.0 ) + impactVelocity_[i] * timeSinceLastBounce_[i]/1000;
+    
+        if (height_[i] < 0 ) {
+            height_[i] = 0;
+            impactVelocity_[i] = Dampening[i] * impactVelocity_[i];
+            clockTimeSinceLastBounce_[i] = millis();
+    
+            if ( impactVelocity_[i] < 0.01 ) {
+                // give the ball a 'kick' if it stops moving.
+                impactVelocity_[i] = ImpactVelocityStart;
+            }
+        }
+        // move the led to the next position
+        int position = round(height_[i] * (NUM_LEDS - 150) / StartHeight);
+        if(i == 0) {
+            set_led(primary_, NUM_LEDS - (position+1));
+            set_led(primary_, position);
+        } else if(i == 1) {
+            set_led(secondary_, NUM_LEDS - (position+1));
+            set_led(secondary_, position);
+        } else {
+            set_led(alternate_, NUM_LEDS - (position+1));
+            set_led(alternate_, position);
+        }
+    }
+    FastLED.show();
+
+    // blank the leds (but don't display till next loop.)
+    for (int i = 0; i < ballCount_; i++) {
+        int position = round(height_[i] * (NUM_LEDS - 150) / StartHeight);
+        set_led(CRGB::Black, NUM_LEDS - (position+1));
+        set_led(CRGB::Black, position);
+    }
 }

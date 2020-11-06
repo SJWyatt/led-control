@@ -73,10 +73,10 @@ class Interface {
 
         Leds* lights_;
 
-        static const uint8_t numOptions_ = 11;
-        String options_[numOptions_] =          {"Wave", "Snake", "Fade", "Ping Pong", "Bounce", "Flash", "Rainbow", "Random", "Color",  "White",       "Off"};
-        LedState ledOptions_[numOptions_] =     { Wave,   Snake,   Fade,   PingPong,    Bounce,   Flash,   Rainbow,   Random,   Color,    White,         Off };
-        SettingType stateSettings_[numOptions_] = {All,   All,     All,    All,         All,      All,     All,       All,      SetColor, SetBrightness, None};
+        static const uint8_t numOptions_ = 12;
+        String options_[numOptions_] =          {"Wave", "Snake", "Fade", "Ping Pong", "Bounce", "Flash", "Rainbow", "Random", "Gravity", "Color",  "White",       "Off"};
+        LedState ledOptions_[numOptions_] =     { Wave,   Snake,   Fade,   PingPong,    Bounce,   Flash,   Rainbow,   Random,   Gravity,   Color,    White,         Off };
+        SettingType stateSettings_[numOptions_] = {All,   All,     All,    All,         All,      All,     All,       All,      All,       SetColor, SetBrightness, None};
         uint8_t curOption_ = 0;
         uint8_t prevOption_ = numOptions_ - 1;
 

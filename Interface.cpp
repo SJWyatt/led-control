@@ -7,6 +7,7 @@ Interface::Interface(Keypad* lcd) {
 Interface::Interface(Keypad* lcd, Leds* lights) {
     lcd_ = lcd;
     lights_ = lights;
+    lights_->set_state(Gravity);
 }
 
 void Interface::draw() {
@@ -190,7 +191,6 @@ void Interface::check_setting() {
         default:
             break;
     }
-
 }
 
 void Interface::select() {

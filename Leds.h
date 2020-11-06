@@ -25,7 +25,8 @@ typedef enum {Off,
               Flash,
               PingPong,
               Rainbow,
-              Random
+              Random,
+              Gravity
               } LedState; // function to display on led's
 
 class Leds {
@@ -89,15 +90,26 @@ class Leds {
 
         // void morse_code();
 
+        void init_gravity();
+        void gravity();
+
         LedState state_ = Off;
         uint64_t last_updated = 0;
     private:
         CRGB primary_ = CRGB(255, 0, 0);
         CRGB secondary_ = CRGB(0, 0, 255);
+        CRGB alternate_ = CRGB(0, 255, 0);
 
         uint8_t brightness_ = 25; // 10% brightness
         uint16_t length_ = 10; // 10 leds
         uint8_t delay_ = 25; // initial speed
+
+        // Gravity parameters
+        static const uint8_t ballCount_ = 3;
+        float height_[ballCount_];
+        float impactVelocity_[ballCount_];
+        float timeSinceLastBounce_[ballCount_];
+        long  clockTimeSinceLastBounce_[ballCount_];
 
         bool direction_ = true;
 
