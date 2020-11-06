@@ -3,6 +3,7 @@
 
 Leds::Leds() {
     state_ = Off;
+    randomSeed(analogRead(0));
 }
 
 Leds::Leds(uint16_t brightness, uint16_t length, uint16_t delay) {
@@ -10,7 +11,7 @@ Leds::Leds(uint16_t brightness, uint16_t length, uint16_t delay) {
     this->set_length(length);
     this->set_delay(delay);
 
-    state_ = Off;
+    Leds();
 }
 
 void Leds::setup() {
@@ -61,6 +62,9 @@ void Leds::refresh() {
             case Rainbow:
                 this->rainbow();
                 break;
+            case Random:
+                this->random_colors();
+                break;
             case Off:
             case White:
             case Color:
@@ -105,6 +109,9 @@ void Leds::redraw() {
             break;
         case Rainbow:
             this->rainbow();
+            break;
+        case Random:
+            this->random_colors();
             break;
         default:
             // do nothing
@@ -263,16 +270,31 @@ void Leds::fade() {
     uint16_t pos = 40 * 10;
     float fade_step = (float)(200) / ((float)(pos) / (float)(4));
 
+    Serial.print("p: ");
+    Serial.print(pos);
+    Serial.print(" f_s: ");
+    Serial.print(fade_step);
+    Serial.print(" v: ");
+
+
     CRGB col0;
     // initial fade
     if(index_ < pos/4) {
-        col0 = primary_.subtractFromRGB(50 + fade_step * (float)((pos/4) - index_));
+        Serial.print(50 + fade_step * (float)((pos/4) - index_));
+        col0 = primary_;
+        col0 = col0.subtractFromRGB(50 + fade_step * (float)((pos/4) - index_));
     } else if(index_ < (pos * 2)/4) {
-        col0 = primary_.subtractFromRGB(50 + fade_step * (float)(index_ - (pos/4)));
+        Serial.print(50 + fade_step * (float)(index_ - (pos/4)));
+        col0 = primary_;
+        col0 = col0.subtractFromRGB(50 + fade_step * (float)(index_ - (pos/4)));
     } else if(index_ < (pos * 3)/4) {
-        col0 = secondary_.subtractFromRGB(50 + fade_step * (float)((pos * 3)/4 - index_));
+        Serial.print(50 + fade_step * (float)((pos * 3)/4 - index_));
+        col0 = secondary_;
+        col0 = col0.subtractFromRGB(50 + fade_step * (float)((pos * 3)/4 - index_));
     } else {
-        col0 = secondary_.subtractFromRGB(50 + fade_step * (float)(index_ - (pos * 3)/4));
+        Serial.print(50 + fade_step * (float)(index_ - (pos * 3)/4));
+        col0 = secondary_;
+        col0 = col0.subtractFromRGB(50 + fade_step * (float)(index_ - (pos * 3)/4));
     }
 
     // Set the colors
@@ -283,6 +305,9 @@ void Leds::fade() {
     } else {
         index_++;
     }
+
+    Serial.print(" I:");
+    Serial.println(index_);
 }
 
 void Leds::flash(bool init) {
@@ -404,4 +429,15 @@ void Leds::rainbow() {
     } else {
         index_ = 0;
     }
+}
+
+void Leds::random_colors() {
+    //                  Red            green          yellow           pink               blue               white orange
+    // CRGB colors = {CRGB::Red, CRGB(0,200,0), CRGB(255,255,0), CRGB(255,192,203), CRGB(0,100,255), CRGB::White};
+    CRGB colors[10] = {CRGB::Red, CRGB::DarkGreen, CRGB::White, CRGB::Cyan, CRGB::LightGreen, CRGB::Orange, CRGB::Yellow, CRGB::Pink, CRGB::PowderBlue, CRGB::MidnightBlue};
+
+    for(size_t i = 0; i < NUM_LEDS; i++) {
+        leds_[i] = colors[random(0,10)];
+    }
+    FastLED.show();
 }

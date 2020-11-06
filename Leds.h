@@ -24,7 +24,8 @@ typedef enum {Off,
               Fade,
               Flash,
               PingPong,
-              Rainbow
+              Rainbow,
+              Random
               } LedState; // function to display on led's
 
 class Leds {
@@ -78,18 +79,15 @@ class Leds {
         void init_pingpong();
         void ping_pong();
 
-        void bounce(bool alternate=false);
+        void bounce(bool alternate=true);
 
         void rainbow();
 
         // randomly flash different colors for each led
-        // void random();
+        // Red green yellow pink blue white orange
+        void random_colors();
 
         // void morse_code();
-
-
-
-
 
         LedState state_ = Off;
         uint64_t last_updated = 0;
@@ -99,7 +97,7 @@ class Leds {
 
         uint8_t brightness_ = 25; // 10% brightness
         uint16_t length_ = 10; // 10 leds
-        uint8_t delay_ = 0; // fastest speed
+        uint8_t delay_ = 25; // initial speed
 
         bool direction_ = true;
 

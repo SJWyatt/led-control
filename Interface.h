@@ -20,13 +20,18 @@ using namespace std;
 typedef enum {
     Nothing,
     Menu,
-    Settings
+    Settings,
+    Primary,
+    Secondary,
+    Brightness,
+    Speed
 } DisplayMode; // state_s
 
 typedef enum {
     All,
-    Primary,
-    Brightness,
+    SetColor,
+    SetBrightness,
+    SetSpeed,
     None
 } SettingType;
 
@@ -68,10 +73,10 @@ class Interface {
 
         Leds* lights_;
 
-        static const uint8_t numOptions_ = 10;
-        String options_[numOptions_] =          {"Wave", "Snake", "Fade", "Ping Pong", "Bounce", "Flash", "Rainbow", "Color", "White",    "Off"};
-        LedState ledOptions_[numOptions_] =     { Wave,   Snake,   Fade,   PingPong,    Bounce,   Flash,   Rainbow,   Color,   White,      Off };
-        SettingType stateSettings_[numOptions_] = {All,   All,     All,    All,         All,      All,     All,       Primary, Brightness, None};
+        static const uint8_t numOptions_ = 11;
+        String options_[numOptions_] =          {"Wave", "Snake", "Fade", "Ping Pong", "Bounce", "Flash", "Rainbow", "Random", "Color",  "White",       "Off"};
+        LedState ledOptions_[numOptions_] =     { Wave,   Snake,   Fade,   PingPong,    Bounce,   Flash,   Rainbow,   Random,   Color,    White,         Off };
+        SettingType stateSettings_[numOptions_] = {All,   All,     All,    All,         All,      All,     All,       All,      SetColor, SetBrightness, None};
         uint8_t curOption_ = 0;
         uint8_t prevOption_ = numOptions_ - 1;
 

@@ -40,6 +40,8 @@ DisplayMode Interface::menu() {
             case Settings:
                 lcd_->write("Settings:");
                 break;
+            case Brightness:
+                break;
             default:
                 break;
         }
