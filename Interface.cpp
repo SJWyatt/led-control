@@ -23,13 +23,25 @@ void Interface::draw() {
             arrows();
             settings();
             break;
+        case Brightness:
+            brightness();
+            break;
+        case Speed:
+            speed();
+            break;
+        case Primary:
+            primary();
+            break;
+        case Secondary:
+            secondary();
+            break;
         default:
             break;
     }
 }
 
-DisplayMode Interface::menu() {
-    if (state_ != lastState_) {
+void Interface::menu() {
+    if (state_ != lastStateWritten_) {
         // 
         lcd_->clear();
         lcd_->setCursor(0,0);
@@ -42,15 +54,23 @@ DisplayMode Interface::menu() {
                 lcd_->write("Settings:");
                 break;
             case Brightness:
+                lcd_->print(settings_[0]);
+                break;
+            case Speed:
+                lcd_->print(settings_[1]);
+                break;
+            case Primary:
+                lcd_->print(settings_[2]);
+                break;
+            case Secondary:
+                lcd_->print(settings_[3]);
                 break;
             default:
                 break;
         }
         
-        lastState_ = state_;
+        lastStateWritten_ = state_;
     }
-
-    return state_;
 }
 
 void Interface::arrows() {
@@ -193,18 +213,57 @@ void Interface::check_setting() {
     }
 }
 
+void Interface::brightness() {
+    if (selectedBrightness_ != lights_->get_brightness()) {
+        // check_setting(); //change setting if invalid
+
+        // clear this section of the lcd
+        lcd_->setCursor(2, 1);
+        for(size_t i = 0; i < 14; i++) {
+            lcd_->write(' ');
+        }
+
+        // lcd_->setCursor(1 + (14 - settings_[curSetting_].length()) / 2, 1);
+        // lcd_->print(settings_[curSetting_]);
+
+        // Check brightness value
+        // lights_->set_brightness(selectedBrightness_);
+    }
+}
+
+void Interface::speed() {
+
+}
+
+void Interface::primary() {
+
+}
+
+void Interface::secondary() {
+
+}
+
 void Interface::select() {
     switch (state_) {
         case Menu:
-            // Serial.println("Sel - (in Menu)");
             if(stateSettings_[curOption_] != None) {
                 state_ = Settings;
+
                 prevSetting_ = curSetting_ - 1; // to force refresh
             }
             lights_->set_state(ledOptions_[curOption_]);
             break;
         case Settings:
-            // Serial.println("Sel - (in Sett)");
+            // rtnState_ = state_;
+            state_ = setState_[curSetting_];
+            break;
+        case Brightness:
+            break;
+        case Speed:
+            break;
+        case Primary:
+            break;
+        case Secondary:
             break;
         default:
             break;
@@ -214,10 +273,16 @@ void Interface::select() {
 void Interface::down() {
     switch (state_) {
         case Menu:
-            // Serial.println("Dn - (in Menu)");
             break;
         case Settings:
-            // Serial.println("Dn - (in Sett)");
+            break;
+        case Brightness:
+            break;
+        case Speed:
+            break;
+        case Primary:
+            break;
+        case Secondary:
             break;
         default:
             break;
@@ -227,12 +292,22 @@ void Interface::down() {
 void Interface::up() {
     switch (state_) {
         case Menu:
-            // Serial.println("Up - (in Menu)");
             break;
         case Settings:
-            // Serial.println("Up - (in Sett)");
             state_ = Menu;
             prevOption_ = curOption_ - 1; // to force refresh
+            break;
+        case Brightness:
+            state_ = Settings;
+            break;
+        case Speed:
+            state_ = Settings;
+            break;
+        case Primary:
+            state_ = Settings;
+            break;
+        case Secondary:
+            state_ = Settings;
             break;
         default:
             break;
@@ -243,11 +318,17 @@ void Interface::next() {
     switch (state_) {
         case Menu:
             next_option();
-            // Serial.println("Nxt - (in Menu)");
             break;
         case Settings:
-            // Serial.println("Nxt - (in Sett)");
             next_setting();
+            break;
+        case Brightness:
+            break;
+        case Speed:
+            break;
+        case Primary:
+            break;
+        case Secondary:
             break;
         default:
             break;
@@ -257,12 +338,18 @@ void Interface::next() {
 void Interface::prev() {
     switch (state_) {
         case Menu:
-            // Serial.println("Prv - (in Menu)");
             prev_option();
             break;
         case Settings:
-            // Serial.println("Prv - (in Sett)");
             prev_setting();
+            break;
+        case Brightness:
+            break;
+        case Speed:
+            break;
+        case Primary:
+            break;
+        case Secondary:
             break;
         default:
             break;

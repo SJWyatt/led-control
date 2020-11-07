@@ -197,6 +197,10 @@ void Leds::set_brightness(uint16_t brightness) {
     update_ = true;
 }
 
+uint8_t Leds::get_brightness() {
+    return brightness_;
+}
+
 void Leds::set_length(uint16_t length) {
     if (length > NUM_LEDS) {
         // at most fill the whole strip with led's
@@ -211,6 +215,10 @@ void Leds::set_length(uint16_t length) {
     update_ = true;
 }
 
+uint8_t Leds::get_length() {
+    return length_;
+}
+
 void Leds::set_delay(uint16_t delay) {
     if (delay > MAX_DELAY) {
         // have a slowest speed. (1/4 second per )
@@ -220,6 +228,10 @@ void Leds::set_delay(uint16_t delay) {
         delay = 0;
     }
     delay_ = delay;
+}
+
+uint8_t Leds::get_delay() {
+    return delay_;
 }
 
 void Leds::init_snake() {
@@ -493,8 +505,9 @@ void Leds::gravity() {
                 impactVelocity_[i] = ImpactVelocityStart;
             }
         }
+
         // move the led to the next position
-        int position = round(height_[i] * (NUM_LEDS - 150) / StartHeight);
+        int position = round(height_[i] * (NUM_LEDS - 200) / StartHeight);
         if(i == 0) {
             set_led(primary_, NUM_LEDS - (position+1));
             set_led(primary_, position);
@@ -510,7 +523,7 @@ void Leds::gravity() {
 
     // blank the leds (but don't display till next loop.)
     for (int i = 0; i < ballCount_; i++) {
-        int position = round(height_[i] * (NUM_LEDS - 150) / StartHeight);
+        int position = round(height_[i] * (NUM_LEDS - 200) / StartHeight);
         set_led(CRGB::Black, NUM_LEDS - (position+1));
         set_led(CRGB::Black, position);
     }

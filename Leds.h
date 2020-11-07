@@ -46,12 +46,15 @@ class Leds {
 
         // Getters and setters
         void set_brightness(uint16_t brightness);
+        uint8_t get_brightness();
         void set_length(uint16_t length);
+        uint8_t get_length();
         void set_delay(uint16_t delay);
+        uint8_t get_delay();
         void set_primary(CRGB primary);
         void set_secondary(CRGB secondary);
         // void change_direction();
-
+        
         // update functions (too keep refreshing the led's)
         void refresh();
         void redraw();
@@ -102,7 +105,7 @@ class Leds {
 
         uint8_t brightness_ = 25; // 10% brightness
         uint16_t length_ = 10; // 10 leds
-        uint8_t delay_ = 25; // initial speed
+        uint8_t delay_ = 0; // initial speed
 
         // Gravity parameters
         static const uint8_t ballCount_ = 3;

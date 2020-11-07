@@ -41,22 +41,28 @@ class Interface {
         Interface(Keypad* lcd, Leds* lights);
 
         void draw();
-        
-        DisplayMode menu();
+        void menu();
         void arrows();
         
+        // Show available options
         void options();
         uint8_t next_option();
         uint8_t prev_option();
         uint8_t set_option(uint8_t option);
 
+        // Show available settings
         void settings();
         uint8_t next_setting();
         uint8_t prev_setting();
         uint8_t set_setting(uint8_t option);
 
+        // Functions for changing settings
         void brightness();
+        void speed();
+        void primary();
+        void secondary();
 
+        // Respond to keypresses
         void select();
         void up();
         void down();
@@ -67,11 +73,15 @@ class Interface {
         void check_setting();
 
     private:
-        DisplayMode lastState_ = Nothing;
+        DisplayMode lastStateWritten_ = Nothing;
         DisplayMode state_ = Menu;
         Keypad* lcd_;
 
+        // Settings for the led lights
         Leds* lights_;
+        uint8_t selectedBrightness_;
+        uint8_t selectedSpeed_;
+        // uint8_t selectedLength_;
 
         static const uint8_t numOptions_ = 12;
         String options_[numOptions_] =          {"Wave", "Snake", "Fade", "Ping Pong", "Bounce", "Flash", "Rainbow", "Random", "Gravity", "Color",  "White",       "Off"};
@@ -82,6 +92,7 @@ class Interface {
 
         static const uint8_t numSettings_ = 4;
         String settings_[numSettings_] = {"Brightness", "Speed", "Color 1", "Color 2"};
+        DisplayMode setState_[numSettings_] = {Brightness, Speed, Primary, Secondary};
         uint8_t curSetting_ = 0;
         uint8_t prevSetting_ = numSettings_ - 1;
 
