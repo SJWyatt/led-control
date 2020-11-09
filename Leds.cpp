@@ -192,6 +192,7 @@ void Leds::set_brightness(uint16_t brightness) {
         brightness = 0;
     }
     brightness_ = brightness;
+    FastLED.setBrightness(brightness_);
 
     // tell the refresh operation to redraw the whole led strip
     update_ = true;
