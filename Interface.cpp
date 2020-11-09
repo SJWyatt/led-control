@@ -12,14 +12,13 @@ Interface::Interface(Keypad* lcd, Leds* lights) {
 
 void Interface::draw() {
     lights_->refresh();
+    menu();
     switch (state_) {
         case Menu:
-            menu();
             arrows();
             options();
             break;
         case Settings:
-            menu();
             arrows();
             settings();
             break;
@@ -48,10 +47,10 @@ void Interface::menu() {
         
         switch(state_) {
             case Menu:
-                lcd_->write("Menu:");
+                lcd_->write("Menu");
                 break;
             case Settings:
-                lcd_->write("Settings:");
+                lcd_->write("Settings");
                 break;
             case Brightness:
                 lcd_->print(settings_[0]);
@@ -68,6 +67,7 @@ void Interface::menu() {
             default:
                 break;
         }
+        lcd_->write(58);
         
         lastStateWritten_ = state_;
     }
@@ -83,10 +83,10 @@ void Interface::arrows() {
             lcd_->write(126);
         } else {
             lcd_->setCursor(0,1);
-            lcd_->write(' ');
+            lcd_->write(32);
 
             lcd_->setCursor(15,1);
-            lcd_->write(' ');
+            lcd_->write(32);
         }
         flash_ = !flash_;
         last_changed_ = millis();
@@ -98,7 +98,7 @@ void Interface::options() {
         // clear this section of the lcd
         lcd_->setCursor(2, 1);
         for(size_t i = 0; i < 14; i++) {
-            lcd_->write(' ');
+            lcd_->write(32);
         }
 
         lcd_->setCursor(1 + (14 - options_[curOption_].length()) / 2, 1);
@@ -149,7 +149,7 @@ void Interface::settings() {
         // clear this section of the lcd
         lcd_->setCursor(2, 1);
         for(size_t i = 0; i < 14; i++) {
-            lcd_->write(' ');
+            lcd_->write(32);
         }
 
         lcd_->setCursor(1 + (14 - settings_[curSetting_].length()) / 2, 1);
@@ -190,6 +190,7 @@ uint8_t Interface::set_setting(uint8_t setting) {
         curSetting_ = setting;
     }
 
+    check_setting();
     settings();
 
     return curSetting_;
@@ -199,11 +200,14 @@ void Interface::check_setting() {
     switch(stateSettings_[curOption_]) {
         case All: // Do nothing, all settings are displayed
             break;
-        case Brightness: //Only show brightness setting
+        case SetBrightness: //Only show brightness setting
             curSetting_ = 0; // TODO: change from static number.
             break;
-        case Primary:
-            curSetting_ = 2;
+        case SetSpeed:
+            curSetting_ = 1; // TODO: change from static number.
+            break;
+        case SetColor:
+            curSetting_ = 2; // TODO: change from static number.
             break;
         case None: // Nothing should be displayed.
             // TODO: check that this is an unreachable state
@@ -214,25 +218,88 @@ void Interface::check_setting() {
 }
 
 void Interface::brightness() {
-    if (selectedBrightness_ != lights_->get_brightness()) {
-        // check_setting(); //change setting if invalid
-
-        // clear this section of the lcd
-        lcd_->setCursor(2, 1);
-        for(size_t i = 0; i < 14; i++) {
-            lcd_->write(' ');
+    uint8_t brightness = lights_->get_brightness();
+    if (shownBrightness_ != brightness) {
+        // Show current brightness value
+        lcd_->setCursor(0, 1);
+        uint8_t i = 0;
+        for(; i < (KEYPAD_LEN * brightness)/MAX_BRIGHTNESS; i++) {
+          lcd_->write(45);
+        }
+        for(uint8_t j = i; j < KEYPAD_LEN; j++) {
+          lcd_->write(32); // space
         }
 
-        // lcd_->setCursor(1 + (14 - settings_[curSetting_].length()) / 2, 1);
-        // lcd_->print(settings_[curSetting_]);
-
-        // Check brightness value
-        // lights_->set_brightness(selectedBrightness_);
+        shownBrightness_ = brightness;
     }
 }
 
-void Interface::speed() {
+void Interface::increase_brightness() {
+    uint8_t brightness = lights_->get_brightness();
+    brightness += 5;
+    if(brightness > MAX_BRIGHTNESS) {
+        brightness = MAX_BRIGHTNESS;
+    }
+    lights_->set_brightness(brightness);
+}
 
+void Interface::decrease_brightness() {
+    uint8_t brightness = lights_->get_brightness();
+    brightness -= 5;
+    if(brightness <= 0) {
+        brightness = 1;
+    }
+    lights_->set_brightness(brightness);
+}
+
+void Interface::set_brightness(uint8_t brightness) {
+    if(brightness <= 0) {
+        brightness = 1;
+    } else if (brightness > MAX_BRIGHTNESS) {
+        brightness = MAX_BRIGHTNESS;
+    }
+    lights_->set_brightness(brightness);
+}
+
+void Interface::speed() {
+    uint8_t delay = lights_->get_delay();
+    if (shownSpeed_ != delay) {
+        // Show current speed (stored as a delay value)
+        lcd_->setCursor(0, 1);
+
+        uint8_t i = 0;
+        for(; i < (KEYPAD_LEN * (MAX_DELAY - delay))/MAX_DELAY; i++) {
+            lcd_->write(45);
+        }
+        for(uint8_t j = i; j < KEYPAD_LEN; j++) {
+            lcd_->write(32); // space
+        }
+
+        shownSpeed_ = delay;
+    }
+}
+
+void Interface::increase_speed() {
+    uint8_t delay = lights_->get_delay();
+    delay -= 2;
+    if(delay < 0) {
+        delay = 0;
+    }
+    lights_->set_delay(delay);
+}
+
+void Interface::decrease_speed() {
+    uint8_t delay = lights_->get_delay();
+    delay += 2;
+    if(delay <= MAX_DELAY) {
+        lights_->set_delay(delay);
+    }
+}
+
+void Interface::set_speed(uint8_t delay) {
+    if(delay >= 0 && delay <= MAX_DELAY) {
+        lights_->set_delay(delay);
+    }
 }
 
 void Interface::primary() {
@@ -248,7 +315,6 @@ void Interface::select() {
         case Menu:
             if(stateSettings_[curOption_] != None) {
                 state_ = Settings;
-
                 prevSetting_ = curSetting_ - 1; // to force refresh
             }
             lights_->set_state(ledOptions_[curOption_]);
@@ -277,8 +343,18 @@ void Interface::down() {
         case Settings:
             break;
         case Brightness:
+            if (shownBrightness_ == 1 || shownBrightness_ < MAX_BRIGHTNESS/2) {
+                set_brightness(MAX_BRIGHTNESS);
+            } else {
+                set_brightness(1);
+            }
             break;
         case Speed:
+            if (shownSpeed_ == 0 || shownSpeed_ < MAX_DELAY/2) {
+                set_speed(MAX_DELAY);
+            } else {
+                set_speed(0);
+            }
             break;
         case Primary:
             break;
@@ -298,16 +374,13 @@ void Interface::up() {
             prevOption_ = curOption_ - 1; // to force refresh
             break;
         case Brightness:
-            state_ = Settings;
-            break;
+            shownBrightness_ = 0;
         case Speed:
-            state_ = Settings;
-            break;
+            shownSpeed_ = MAX_DELAY;
         case Primary:
-            state_ = Settings;
-            break;
         case Secondary:
             state_ = Settings;
+            prevSetting_ = curSetting_ - 1; // to force refresh
             break;
         default:
             break;
@@ -323,10 +396,13 @@ void Interface::next() {
             next_setting();
             break;
         case Brightness:
+            increase_brightness();
             break;
         case Speed:
+            increase_speed();
             break;
         case Primary:
+
             break;
         case Secondary:
             break;
@@ -344,8 +420,10 @@ void Interface::prev() {
             prev_setting();
             break;
         case Brightness:
+            decrease_brightness();
             break;
         case Speed:
+            decrease_speed();
             break;
         case Primary:
             break;

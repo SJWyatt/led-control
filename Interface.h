@@ -58,7 +58,15 @@ class Interface {
 
         // Functions for changing settings
         void brightness();
+        void increase_brightness();
+        void decrease_brightness();
+        void set_brightness(uint8_t brightness);
+
         void speed();
+        void decrease_speed();
+        void increase_speed();
+        void set_speed(uint8_t speed);
+
         void primary();
         void secondary();
 
@@ -79,8 +87,8 @@ class Interface {
 
         // Settings for the led lights
         Leds* lights_;
-        uint8_t selectedBrightness_;
-        uint8_t selectedSpeed_;
+        uint8_t shownBrightness_ = 0;
+        uint8_t shownSpeed_ = MAX_DELAY;
         // uint8_t selectedLength_;
 
         static const uint8_t numOptions_ = 12;
