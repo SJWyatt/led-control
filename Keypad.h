@@ -12,6 +12,8 @@
 #include <LiquidCrystal.h>
 #include <avr/io.h>
 
+#define KEYPAD_LEN 16
+
 const unsigned short debounceDelay = 50;
 
 typedef enum {LEFT, RIGHT, UP, DOWN, SELECT, NONE} Button;
