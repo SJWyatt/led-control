@@ -180,9 +180,15 @@ void Leds::range(CRGB col, uint16_t low, uint16_t high) {
 void Leds::set_led(CRGB col, uint16_t idx) {
     if(idx >= NUM_LEDS || idx < 0) { // error checking
         return;
+    } else if (reverse_) {
+        leds_[(NUM_LEDS - 1) - idx] = col;
     } else {
         leds_[idx] = col;
     }
+}
+
+void Leds::change_direction() {
+    reverse_ = !reverse_;
 }
 
 void Leds::set_brightness(uint16_t brightness) {
@@ -268,6 +274,8 @@ void Leds::init_wave() {
     }
     FastLED.show();
 }
+
+
 
 void Leds::wave() {
     for(size_t i = 0; i <= ceil(NUM_LEDS/(float)(length_*2)); i++) {
@@ -446,7 +454,7 @@ void Leds::bounce(bool alternate) {
 void Leds::rainbow() {
     uint16_t size = 1;
     for (size_t i = 0; i < NUM_LEDS; i++) {
-        leds_[i] = CHSV(i - (index_ * (2 * size)), 255, 255); /* The higher the value 4 the less fade there is and vice versa */ 
+        this->set_led(CHSV(i - (index_ * (2 * size)), 255, 255), i); /* The higher the value 4 the less fade there is and vice versa */ 
     }
     FastLED.show();
 
@@ -463,7 +471,7 @@ void Leds::random_colors() {
     CRGB colors[10] = {CRGB::Red, CRGB::DarkGreen, CRGB::White, CRGB::Cyan, CRGB::LightGreen, CRGB::Orange, CRGB::Yellow, CRGB::Pink, CRGB::PowderBlue, CRGB::MidnightBlue};
 
     for(size_t i = 0; i < NUM_LEDS; i++) {
-        leds_[i] = colors[random(0,10)];
+        this->set_led(colors[random(0,10)], i);
     }
     FastLED.show();
 }

@@ -57,7 +57,8 @@ class Leds {
 
         void set_primary(CRGB primary);
         void set_secondary(CRGB secondary);
-        // void change_direction();
+
+        void change_direction();
         
         // update functions (too keep refreshing the led's)
         void refresh();
@@ -121,7 +122,8 @@ class Leds {
 
         bool direction_ = true;
 
-        uint16_t index_ = 0; // start at teh very beginning.
+        uint16_t index_ = 0; // start at the very beginning.
+        bool reverse_ = true;
         bool update_ = false; // whether to update 'all' the led's.
 };
 
