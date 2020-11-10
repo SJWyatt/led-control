@@ -7,7 +7,10 @@ Interface::Interface(Keypad* lcd) {
 Interface::Interface(Keypad* lcd, Leds* lights) {
     lcd_ = lcd;
     lights_ = lights;
-    lights_->set_state(Gravity);
+    lights_->set_state(Wave);
+    lights_->set_brightness(50);
+    lights_->set_delay(25);
+    lights_->set_length(20);
 }
 
 void Interface::draw() {
@@ -27,6 +30,9 @@ void Interface::draw() {
             break;
         case Speed:
             speed();
+            break;
+        case Length:
+            length();
             break;
         case Primary:
             primary();
@@ -58,11 +64,14 @@ void Interface::menu() {
             case Speed:
                 lcd_->print(settings_[1]);
                 break;
-            case Primary:
+            case Length:
                 lcd_->print(settings_[2]);
                 break;
-            case Secondary:
+            case Primary:
                 lcd_->print(settings_[3]);
+                break;
+            case Secondary:
+                lcd_->print(settings_[4]);
                 break;
             default:
                 break;
@@ -302,6 +311,50 @@ void Interface::set_speed(uint8_t delay) {
     }
 }
 
+void Interface::length() {
+    uint8_t length = lights_->get_length();
+    if (shownLength_ != length) {
+        // Show current brightness value
+        lcd_->setCursor(0, 1);
+        uint8_t i = 0;
+        for(; i < (KEYPAD_LEN * length)/MAX_LEN; i++) {
+          lcd_->write(45);
+        }
+        for(uint8_t j = i; j < KEYPAD_LEN; j++) {
+          lcd_->write(32); // space
+        }
+
+        shownLength_ = length;
+    }
+}
+
+void Interface::increase_length() {
+    uint8_t length = lights_->get_length();
+    length += 5;
+    if(length > MAX_LEN) {
+        length = MAX_LEN;
+    }
+    lights_->set_length(length);
+}
+
+void Interface::decrease_length() {
+    uint8_t length = lights_->get_length();
+    length -= 5;
+    if(length <= 0) {
+        length = 1;
+    }
+    lights_->set_length(length);
+}
+
+void Interface::set_length(uint8_t length) {
+    if(length <= 0) {
+        length = 1;
+    } else if (length > MAX_LEN) {
+        length = MAX_LEN;
+    }
+    lights_->set_length(length);
+}
+
 void Interface::primary() {
 
 }
@@ -326,6 +379,8 @@ void Interface::select() {
         case Brightness:
             break;
         case Speed:
+            break;
+        case Length:
             break;
         case Primary:
             break;
@@ -356,6 +411,13 @@ void Interface::down() {
                 set_speed(0);
             }
             break;
+        case Length:
+            if (shownLength_ == 1 || shownLength_ < MAX_LEN/2) {
+                set_length(MAX_LEN);
+            } else {
+                set_length(0);
+            }
+            break;
         case Primary:
             break;
         case Secondary:
@@ -377,6 +439,8 @@ void Interface::up() {
             shownBrightness_ = 0;
         case Speed:
             shownSpeed_ = MAX_DELAY;
+        case Length:
+            shownLength_ = 0;
         case Primary:
         case Secondary:
             state_ = Settings;
@@ -401,8 +465,10 @@ void Interface::next() {
         case Speed:
             increase_speed();
             break;
+        case Length:
+            increase_length();
+            break;
         case Primary:
-
             break;
         case Secondary:
             break;
@@ -424,6 +490,9 @@ void Interface::prev() {
             break;
         case Speed:
             decrease_speed();
+            break;
+        case Length:
+            decrease_length();
             break;
         case Primary:
             break;

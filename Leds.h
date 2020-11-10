@@ -14,6 +14,7 @@
 #define NUM_LEDS    300
 #define MAX_BRIGHTNESS 250
 #define MAX_DELAY 250
+#define MAX_LEN 150
 
 typedef enum {Off,
               White,
@@ -47,10 +48,13 @@ class Leds {
         // Getters and setters
         void set_brightness(uint16_t brightness);
         uint8_t get_brightness();
+
         void set_length(uint16_t length);
         uint8_t get_length();
+
         void set_delay(uint16_t delay);
         uint8_t get_delay();
+
         void set_primary(CRGB primary);
         void set_secondary(CRGB secondary);
         // void change_direction();
@@ -83,6 +87,7 @@ class Leds {
         void init_pingpong();
         void ping_pong();
 
+        void init_bounce(bool alternate=true);
         void bounce(bool alternate=true);
 
         void rainbow();

@@ -24,7 +24,8 @@ typedef enum {
     Primary,
     Secondary,
     Brightness,
-    Speed
+    Speed,
+    Length
 } DisplayMode; // state_s
 
 typedef enum {
@@ -32,6 +33,7 @@ typedef enum {
     SetColor,
     SetBrightness,
     SetSpeed,
+    SetLength,
     None
 } SettingType;
 
@@ -67,6 +69,11 @@ class Interface {
         void increase_speed();
         void set_speed(uint8_t speed);
 
+        void length();
+        void decrease_length();
+        void increase_length();
+        void set_length(uint8_t length);
+
         void primary();
         void secondary();
 
@@ -89,6 +96,7 @@ class Interface {
         Leds* lights_;
         uint8_t shownBrightness_ = 0;
         uint8_t shownSpeed_ = MAX_DELAY;
+        uint8_t shownLength_ = 0;
         // uint8_t selectedLength_;
 
         static const uint8_t numOptions_ = 12;
@@ -98,9 +106,9 @@ class Interface {
         uint8_t curOption_ = 0;
         uint8_t prevOption_ = numOptions_ - 1;
 
-        static const uint8_t numSettings_ = 4;
-        String settings_[numSettings_] = {"Brightness", "Speed", "Color 1", "Color 2"};
-        DisplayMode setState_[numSettings_] = {Brightness, Speed, Primary, Secondary};
+        static const uint8_t numSettings_ = 5;
+        String settings_[numSettings_] = {"Brightness", "Speed", "Length", "Color 1", "Color 2"};
+        DisplayMode setState_[numSettings_] = {Brightness, Speed, Length, Primary, Secondary};
         uint8_t curSetting_ = 0;
         uint8_t prevSetting_ = numSettings_ - 1;
 
