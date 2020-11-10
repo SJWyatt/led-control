@@ -100,7 +100,7 @@ void Leds::redraw() {
             this->init_wave();
             break;
         case Bounce:
-            this->bounce();
+            this->init_bounce();
             break;
         case Fade:
             this->fade();
@@ -380,6 +380,13 @@ void Leds::ping_pong() {
         }
     }
     FastLED.show();
+}
+
+void Leds::init_bounce(bool alternate) {
+    for(size_t i = 0; i < NUM_LEDS; i++) {
+        this->set_led(CRGB::Black, i);
+    }
+    this->bounce();
 }
 
 void Leds::bounce(bool alternate) {
