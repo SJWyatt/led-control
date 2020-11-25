@@ -56,6 +56,9 @@ class Leds {
         void set_delay(uint16_t delay);
         uint8_t get_delay();
 
+        void set_index(uint16_t index);
+        uint16_t get_index();
+
         void set_primary(CRGB primary);
         void set_secondary(CRGB secondary);
 

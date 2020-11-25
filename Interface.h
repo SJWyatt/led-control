@@ -11,6 +11,7 @@
 
 #include "Keypad.h"
 #include "Leds.h"
+#include "Radio.h"
 #include <string.h>
 
 using namespace std;
@@ -41,10 +42,12 @@ class Interface {
     public:
         Interface(Keypad* lcd);
         Interface(Keypad* lcd, Leds* lights);
+        Interface(Keypad* lcd, Leds* lights, Radio* radio);
 
         void draw();
         void menu();
         void arrows();
+        void connection(bool force=false);
         
         // Show available options
         void options();
@@ -99,6 +102,9 @@ class Interface {
         uint8_t shownLength_ = 0;
         // uint8_t selectedLength_;
 
+        Radio* radio_;
+        bool lastConnectionState_ = false;
+
         static const uint8_t numOptions_ = 12;
         char options_[numOptions_][4] =          {"Wv", "Snk", "Fde", "Png", "Bnc", "Fls", "Rbw", "Rnd", "Grv", "Clr",  "Wht",       "Off"};
         int8_t ledOptions_[numOptions_] =     { Wave,   Snake,   Fade,   PingPong,    Bounce,   Flash,   Rainbow,   Random,   Gravity,   Color,    White,         Off }; // Using int8_t, instead of LedState for size
@@ -114,6 +120,8 @@ class Interface {
 
         uint32_t last_changed_ = 0;
         bool flash_ = true;
+
+        uint32_t lastUpdateSent_ = 0;
 };
 
 #endif

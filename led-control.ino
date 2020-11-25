@@ -16,15 +16,14 @@
 Keypad lcd(       8,          9,              4,          5,          6,          7,           18,         false);
 
 Leds lights;
-Interface interface(&lcd, &lights);
-
-Radio radio;
+Radio radio(A1, A2, &lights);
 void radio_ISR(); // to catch message recieved interrupts
+
+Interface interface(&lcd, &lights, &radio);
 
 void setup() {
   //setup Serial display (for debugging)
   Serial.begin(115200);
-  Serial.println('.');
 
   // Seed some chaos...
   randomSeed(analogRead(5));

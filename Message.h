@@ -16,6 +16,7 @@ class Message {
             Ping=-2,
             Pong=-1,
             Empty=0,
+            State,
             Index,
             Delay,
             Length,

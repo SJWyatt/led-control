@@ -249,6 +249,19 @@ uint8_t Leds::get_delay() {
     return delay_;
 }
 
+void Leds::set_index(uint16_t index) {
+    if (index >= NUM_LEDS) {
+        index = NUM_LEDS-1;
+    } else if (index < 0) {
+        index = 0;
+    }
+    index_ = index;
+}
+
+uint16_t Leds::get_index() {
+    return index_;
+}
+
 void Leds::init_snake() {
     this->range(secondary_, 0, index_);
     this->range(primary_, index_, NUM_LEDS);

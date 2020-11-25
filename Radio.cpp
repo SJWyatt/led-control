@@ -7,12 +7,17 @@
 #include <Arduino.h>
 #include "Message.h"
 
-Radio::Radio() {
-    radio_ = new RF24(A1, A2);
-}
+// Radio::Radio() {
+//     radio_ = new RF24(A1, A2);
+// }
 
 Radio::Radio(uint8_t CE, uint8_t CSE) {
     radio_ = new RF24(CE, CSE);
+}
+
+Radio::Radio(uint8_t CE, uint8_t CSE, Leds* lights) {
+    radio_ = new RF24(CE, CSE);
+    lights_ = lights;
 }
 
 void Radio::begin() {
@@ -55,7 +60,7 @@ void Radio::connect() {
 void Radio::listen() {
     switch(state_) {
         case Disconnected:
-            #ifdef DEBUG
+            #ifdef DEBUG_RADIO
                 Serial.println("Broadcasting...");
             #endif
 
@@ -67,7 +72,7 @@ void Radio::listen() {
 
             // Write a connection request
             radio_->startWrite(&connMsg_, sizeof(connMsg_), 0);
-            #ifdef DEBUG
+            #ifdef DEBUG_RADIO
                 sendTime_ = micros();
             #endif
 
@@ -77,7 +82,7 @@ void Radio::listen() {
         case Initializing:
             // Wait for ack.
             if(msgAvail_ && lastMessage_ == ackMsg_) {
-                #ifdef DEBUG
+                #ifdef DEBUG_RADIO
                     Serial.println("ACK recieved!");
                 #endif
 
@@ -87,7 +92,7 @@ void Radio::listen() {
                 delay(1);
 
                 radio_->startWrite(&okMsg_, sizeof(okMsg_), 0);
-                #ifdef DEBUG
+                #ifdef DEBUG_RADIO
                     sendTime_ = micros();
                 #endif
 
@@ -98,8 +103,10 @@ void Radio::listen() {
 
                 // connect();
 
-                // Serial.println("Conn (M)");
-                Serial.println('M');
+                #ifdef DEBUG_RADIO
+                    // Serial.println("Conn (M)");
+                    Serial.println('M');
+                #endif
                 break;
             }
             
@@ -116,7 +123,7 @@ void Radio::listen() {
                 timeEnteredState_ = millis();
                 radio_->startListening();
 
-                #ifdef DEBUG
+                #ifdef DEBUG_RADIO
                     Serial.println("ACK timeout!");
                 #endif
             }
@@ -125,7 +132,7 @@ void Radio::listen() {
         case Listen:
             // Listen for connection start packet.
             if(msgAvail_ && lastMessage_ == connMsg_) {
-                #ifdef DEBUG
+                #ifdef DEBUG_RADIO
                     Serial.println("Broadcast recieved!");
                 #endif
                 msgAvail_ = false;
@@ -134,7 +141,7 @@ void Radio::listen() {
                 delay(1);
 
                 radio_->startWrite(&ackMsg_, sizeof(ackMsg_), 0);
-                #ifdef DEBUG
+                #ifdef DEBUG_RADIO
                     sendTime_ = micros();
                 #endif
 
@@ -160,7 +167,9 @@ void Radio::listen() {
                 state_ = Connected;
                 timeEnteredState_ = millis();
 
-                Serial.println('S');
+                #ifdef DEBUG_RADIO
+                    Serial.println('S');
+                #endif
                 break;
             }
             
@@ -185,9 +194,39 @@ void Radio::listen() {
                     state_ = Listen;
                     timeEnteredState_ = millis();
                 } else {
-                    // Just show the message
-                    // Serial.print("Msg: ");
-                    Serial.println(lastMessage_.getPayload());
+                    switch(lastMessage_.getType()) {
+                        case Message::Empty:
+                            break;
+                        case Message::State:
+                            lights_->set_state((LedState)lastMessage_.getPayload());
+                            break;
+                        case Message::Index:
+                            lights_->set_index((uint16_t)lastMessage_.getPayload());
+                            break;
+                        case Message::Delay:
+                            lights_->set_delay((uint16_t)lastMessage_.getPayload());
+                            break;
+                        case Message::Length:
+                            lights_->set_length((uint16_t)lastMessage_.getPayload());
+                            break;
+                        case Message::Brightness:
+                            lights_->set_brightness((uint16_t)lastMessage_.getPayload());
+                            break;
+                        case Message::Direction:
+                            break;
+                        case Message::PrimaryColor:
+                            break;
+                        case Message::SecondaryColor:
+                            break;
+                        case Message::AlternateColor:
+                            break;
+                        default:
+                            #ifdef DEBUG_RADIO
+                                // Just show the message
+                                Serial.println(lastMessage_.getPayload());
+                            #endif
+                            break;
+                    }
                     msgAvail_ = false;
                 }
             }
@@ -200,7 +239,7 @@ void Radio::listen() {
 
             // After PING_MISSES in a row, assume we are disconnected.
             if(failedPings_ > PING_MISSES) {
-                #ifdef DEBUG
+                #ifdef DEBUG_RADIO
                     Serial.println("Too many failed pings, assume disconnected.");
                 #endif
 
@@ -213,7 +252,7 @@ void Radio::listen() {
             }
             break;
         case CheckConnection:
-            #ifdef DEBUG
+            #ifdef DEBUG_RADIO
                 Serial.println("Pinging...");
             #endif
             // Send a ping.
@@ -223,7 +262,7 @@ void Radio::listen() {
             lastMessage_.setPayload(millis(), Message::Ping);
 
             radio_->startWrite(&lastMessage_, sizeof(lastMessage_), 0);
-            #ifdef DEBUG
+            #ifdef DEBUG_RADIO
                 sendTime_ = micros();
             #endif
 
@@ -236,7 +275,7 @@ void Radio::listen() {
                 unsigned long round_trip = millis() - lastMessage_.getPayload();
                 msgAvail_ = false;
 
-                #ifdef DEBUG
+                #ifdef DEBUG_RADIO
                     Serial.print("Message::Pong recieved. (Round trip: ");
                     Serial.print(round_trip);
                     Serial.println("ms)");
@@ -251,7 +290,7 @@ void Radio::listen() {
         case Pinged:
             // Reply if pinged
             if(msgAvail_ && lastMessage_.getType() == Message::Ping) {
-                #ifdef DEBUG
+                #ifdef DEBUG_RADIO
                     Serial.println("Pinged!");
                 #endif
 
@@ -262,7 +301,7 @@ void Radio::listen() {
                 lastMessage_.setType(Message::Pong);
 
                 radio_->startWrite(&lastMessage_, sizeof(lastMessage_), 0);
-                #ifdef DEBUG
+                #ifdef DEBUG_RADIO
                     sendTime_ = micros();
                 #endif
 
@@ -277,8 +316,35 @@ void Radio::listen() {
     }
 }
 
-// void Radio::send_config() {
+bool Radio::connected() {
+    if(state_ == Connected || state_ == CheckConnection || state_ == Pinged || state_ == ReplyReceived) {
+        return true;
+    }
+    return false;
+}
+uint8_t Radio::get_mode() {
+    return mode_;
+}
 
+bool Radio::send_msg(uint32_t msg, Message::DataType type) {
+    //Check if connected.
+    if(connected()) {
+        radio_->stopListening();
+        delay(1);
+
+        // Create message.
+        lastMessage_.setPayload(msg, type);
+        radio_->startWrite(&lastMessage_, sizeof(lastMessage_), 0);
+
+        return true;
+    } else {
+        // Error sending!
+        return false;
+    }
+}
+
+// bool Radio::queue_msg(uint32_t msg, DataType type) {
+//     
 // }
 
 void Radio::messageReceivedISR() {
@@ -287,7 +353,6 @@ void Radio::messageReceivedISR() {
   
     // Check recieved data
     if(rx) {
-        // Serial.println("Message Received!");
         if(radio_->getDynamicPayloadSize() < 1) {
             // This is a flushing operation, ignore.
             return;
@@ -303,7 +368,7 @@ void Radio::messageReceivedISR() {
                 // Ignore, it's a failed ping/pong
                 return;
             } else {
-                #ifdef DEBUG
+                #ifdef DEBUG_RADIO
                     Serial.println("Error, Overwriting previous message!");
                 #endif
 
@@ -322,7 +387,7 @@ void Radio::messageReceivedISR() {
     }
 
     if(fail) {
-        #ifdef DEBUG
+        #ifdef DEBUG_RADIO
             Serial.print("Send time: ");
             Serial.print(micros() - sendTime_);
             Serial.println("us - Failed");

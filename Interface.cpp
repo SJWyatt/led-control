@@ -13,9 +13,34 @@ Interface::Interface(Keypad* lcd, Leds* lights) {
     lights_->set_length(20);
 }
 
+Interface::Interface(Keypad* lcd, Leds* lights, Radio* radio) {
+    lcd_ = lcd;
+    lights_ = lights;
+    
+    lights_->set_state(Wave);
+    lights_->set_brightness(50);
+    lights_->set_delay(25);
+    lights_->set_length(20);
+
+    radio_ = radio;
+    // radio_->send_msg(lights_->get_index(), Message::Index); // won't work as radio is not connected yet.
+    // lastUpdateSent_ = millis();
+}
+
 void Interface::draw() {
+    // refresh the lights (potentially progress the animation)
     lights_->refresh();
+
+    // Check whether to update the lights index
+    if(millis() - lastUpdateSent_ > 5000) {
+        radio_->send_msg(lights_->get_index(), Message::Index);
+        lastUpdateSent_ = millis();
+    }
+
+    // Update the screen title.
     menu();
+
+    // Update the options shown
     switch (state_) {
         case Menu:
             arrows();
@@ -78,7 +103,30 @@ void Interface::menu() {
         }
         lcd_->write(58);
         
+        // Force redraw of connection
+        connection(true);
+
         lastStateWritten_ = state_;
+    }
+
+    // Show connection state
+    connection();
+}
+
+void Interface::connection(bool force) {
+    if(force || lastConnectionState_ != radio_->connected()) {
+        lcd_->setCursor(15,0);
+        if(radio_->connected()) {
+            if(radio_->get_mode() == 0) {
+                lcd_->write('M');
+            } else {
+                lcd_->write('S');
+            }
+        } else {
+            lcd_->write('.');
+        }
+
+        lastConnectionState_ = radio_->connected();
     }
 }
 
@@ -250,6 +298,8 @@ void Interface::increase_brightness() {
         brightness = MAX_BRIGHTNESS;
     }
     lights_->set_brightness(brightness);
+    radio_->send_msg(brightness, Message::Brightness);
+    lastUpdateSent_ = millis();
 }
 
 void Interface::decrease_brightness() {
@@ -259,6 +309,8 @@ void Interface::decrease_brightness() {
         brightness = 1;
     }
     lights_->set_brightness(brightness);
+    radio_->send_msg(brightness, Message::Brightness);
+    lastUpdateSent_ = millis();
 }
 
 void Interface::set_brightness(uint8_t brightness) {
@@ -268,6 +320,8 @@ void Interface::set_brightness(uint8_t brightness) {
         brightness = MAX_BRIGHTNESS;
     }
     lights_->set_brightness(brightness);
+    radio_->send_msg(brightness, Message::Brightness);
+    lastUpdateSent_ = millis();
 }
 
 void Interface::speed() {
@@ -295,6 +349,8 @@ void Interface::increase_speed() {
         delay = 0;
     }
     lights_->set_delay(delay);
+    radio_->send_msg(delay, Message::Delay);
+    lastUpdateSent_ = millis();
 }
 
 void Interface::decrease_speed() {
@@ -302,12 +358,16 @@ void Interface::decrease_speed() {
     delay += 2;
     if(delay <= MAX_DELAY) {
         lights_->set_delay(delay);
+        radio_->send_msg(delay, Message::Delay);
+        lastUpdateSent_ = millis();
     }
 }
 
 void Interface::set_speed(uint8_t delay) {
     if(delay >= 0 && delay <= MAX_DELAY) {
         lights_->set_delay(delay);
+        radio_->send_msg(delay, Message::Delay);
+        lastUpdateSent_ = millis();
     }
 }
 
@@ -335,6 +395,8 @@ void Interface::increase_length() {
         length = MAX_LEN;
     }
     lights_->set_length(length);
+    radio_->send_msg(length, Message::Length);
+    lastUpdateSent_ = millis();
 }
 
 void Interface::decrease_length() {
@@ -344,6 +406,8 @@ void Interface::decrease_length() {
         length = 1;
     }
     lights_->set_length(length);
+    radio_->send_msg(length, Message::Length);
+    lastUpdateSent_ = millis();
 }
 
 void Interface::set_length(uint8_t length) {
@@ -353,6 +417,8 @@ void Interface::set_length(uint8_t length) {
         length = MAX_LEN;
     }
     lights_->set_length(length);
+    radio_->send_msg(length, Message::Length);
+    lastUpdateSent_ = millis();
 }
 
 void Interface::primary() {
@@ -371,6 +437,8 @@ void Interface::select() {
                 prevSetting_ = curSetting_ - 1; // to force refresh
             }
             lights_->set_state(ledOptions_[curOption_]);
+            radio_->send_msg(ledOptions_[curOption_], Message::State);
+            lastUpdateSent_ = millis();
             break;
         case Settings:
             // rtnState_ = state_;
@@ -379,8 +447,12 @@ void Interface::select() {
         case Brightness:
             break;
         case Speed:
+            radio_->send_msg(lights_->get_delay(), Message::Delay);
+            lastUpdateSent_ = millis();
             break;
         case Length:
+            radio_->send_msg(lights_->get_length(), Message::Length);
+            lastUpdateSent_ = millis();
             break;
         case Primary:
             break;

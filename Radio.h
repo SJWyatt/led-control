@@ -12,8 +12,9 @@
 #include <RF24.h>
 #include <Arduino.h>
 #include "Message.h"
+#include "Leds.h"
 
-// #define DEBUG
+// #define DEBUG_RADIO
 
 #define ACK_TIMEOUT 300
 #define OK_TIMEOUT 300
@@ -33,20 +34,25 @@ typedef enum {
 
 class Radio {
     public:
-        Radio();
+        // Radio();
         Radio(uint8_t CE, uint8_t CSE);
+        Radio(uint8_t CE, uint8_t CSE, Leds* lights);
 
         void begin();
         void connect();
 
         void listen();
 
-        // bool send_config();
+        bool connected();
+        uint8_t get_mode();
+        bool send_msg(uint32_t msg, Message::DataType type);
+        // bool queue_msg(uint32_t payload, DataType type);
 
         void messageReceivedISR();
 
     private:
         RF24* radio_;
+        Leds* lights_;
 
         uint8_t state_ = Disconnected; //using uint8_t instead of RadioState to save space.
         unsigned long timeEnteredState_ = millis();
@@ -64,11 +70,13 @@ class Radio {
         Message lastMessage_;
         // Message sendMsg_;
 
-        #ifdef DEBUG
+        #ifdef DEBUG_RADIO
             unsigned long sendTime_ = 0;
         #endif
 
-        bool mode_ = 1; // 0 - send, 1 - listen
+        uint8_t mode_ = 1; // 0 - send, 1 - listen
+
+        // message queue???
 };
 
 #endif
