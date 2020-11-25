@@ -4,9 +4,12 @@
  * Description: main arduino function to control LED strip.
  * 
  *************/
+#include <Arduino.h>
 #include "Keypad.h"
 #include "Interface.h"
 #include "Leds.h"
+#include "Message.h"
+#include "Radio.h"
 
 // setup the liquid crystal display
 //  LiquidCrystal(uint8_t rs, uint8_t enable, uint8_t d0, uint8_t d1, uint8_t d2, uint8_t d3,  Analog Pin, ourBoard = 0);
@@ -15,19 +18,32 @@ Keypad lcd(       8,          9,              4,          5,          6,        
 Leds lights;
 Interface interface(&lcd, &lights);
 
+Radio radio;
+void radio_ISR(); // to catch message recieved interrupts
+
 void setup() {
+  //setup Serial display (for debugging)
+  Serial.begin(115200);
+  Serial.println('.');
+
+  // Seed some chaos...
+  randomSeed(analogRead(5));
+
   // Setup LED's
   lights.setup();
 
-  //setup Serial display (for debugging)
-  Serial.begin(9600);
-
   //Setup LCD Display
   lcd.begin(16,2);
+
+  // Start the radio module.
+  radio.begin();
+
+  // Use an interrupt for handling messages.
+  attachInterrupt(0, radio_ISR, LOW);
 }
 
-
 void loop() {
+    radio.listen();
     interface.draw();
 
     switch(lcd.hasBeenPushed()) {
@@ -49,4 +65,8 @@ void loop() {
         default:
             break;
     }
+}
+
+void radio_ISR() {
+    radio.messageReceivedISR();
 }
