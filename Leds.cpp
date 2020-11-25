@@ -25,6 +25,14 @@ void Leds::setup() {
 
 void Leds::set_state(LedState state) {
     // allow for the led's to be updated dynamically (in refresh operation)
+    state_ = (int8_t) state;
+
+    // draw initial configuration of colors
+    this->redraw();
+}
+
+void Leds::set_state(int8_t state) {
+    // allow for the led's to be updated dynamically (in refresh operation)
     state_ = state;
 
     // draw initial configuration of colors
@@ -32,7 +40,7 @@ void Leds::set_state(LedState state) {
 }
 
 LedState Leds::get_state() {
-    return state_;
+    return (LedState) state_;
 }
 
 void Leds::refresh() {
@@ -297,29 +305,28 @@ void Leds::fade() {
     uint16_t pos = 40 * 10;
     float fade_step = (float)(200) / ((float)(pos) / (float)(4));
 
-    Serial.print("p: ");
-    Serial.print(pos);
-    Serial.print(" f_s: ");
-    Serial.print(fade_step);
-    Serial.print(" v: ");
-
+    // Serial.print("p: ");
+    // Serial.print(pos);
+    // Serial.print(" f_s: ");
+    // Serial.print(fade_step);
+    // Serial.print(" v: ");
 
     CRGB col0;
     // initial fade
     if(index_ < pos/4) {
-        Serial.print(50 + fade_step * (float)((pos/4) - index_));
+        // Serial.print(50 + fade_step * (float)((pos/4) - index_));
         col0 = primary_;
         col0 = col0.subtractFromRGB(50 + fade_step * (float)((pos/4) - index_));
     } else if(index_ < (pos * 2)/4) {
-        Serial.print(50 + fade_step * (float)(index_ - (pos/4)));
+        // Serial.print(50 + fade_step * (float)(index_ - (pos/4)));
         col0 = primary_;
         col0 = col0.subtractFromRGB(50 + fade_step * (float)(index_ - (pos/4)));
     } else if(index_ < (pos * 3)/4) {
-        Serial.print(50 + fade_step * (float)((pos * 3)/4 - index_));
+        // Serial.print(50 + fade_step * (float)((pos * 3)/4 - index_));
         col0 = secondary_;
         col0 = col0.subtractFromRGB(50 + fade_step * (float)((pos * 3)/4 - index_));
     } else {
-        Serial.print(50 + fade_step * (float)(index_ - (pos * 3)/4));
+        // Serial.print(50 + fade_step * (float)(index_ - (pos * 3)/4));
         col0 = secondary_;
         col0 = col0.subtractFromRGB(50 + fade_step * (float)(index_ - (pos * 3)/4));
     }
@@ -333,8 +340,8 @@ void Leds::fade() {
         index_++;
     }
 
-    Serial.print(" I:");
-    Serial.println(index_);
+    // Serial.print(" I:");
+    // Serial.println(index_);
 }
 
 void Leds::flash(bool init) {

@@ -88,8 +88,8 @@ class Interface {
         void check_setting();
 
     private:
-        DisplayMode lastStateWritten_ = Nothing;
-        DisplayMode state_ = Menu;
+        int8_t lastStateWritten_ = Nothing; // Using int8_t, instead of DisplayMode for size
+        int8_t state_ = Menu; // Using int8_t, instead of DisplayMode for size
         Keypad* lcd_;
 
         // Settings for the led lights
@@ -100,15 +100,15 @@ class Interface {
         // uint8_t selectedLength_;
 
         static const uint8_t numOptions_ = 12;
-        String options_[numOptions_] =          {"Wave", "Snake", "Fade", "Ping Pong", "Bounce", "Flash", "Rainbow", "Random", "Gravity", "Color",  "White",       "Off"};
-        LedState ledOptions_[numOptions_] =     { Wave,   Snake,   Fade,   PingPong,    Bounce,   Flash,   Rainbow,   Random,   Gravity,   Color,    White,         Off };
-        SettingType stateSettings_[numOptions_] = {All,   All,     All,    All,         All,      All,     All,       All,      All,       SetColor, SetBrightness, None};
+        char options_[numOptions_][4] =          {"Wv", "Snk", "Fde", "Png", "Bnc", "Fls", "Rbw", "Rnd", "Grv", "Clr",  "Wht",       "Off"};
+        int8_t ledOptions_[numOptions_] =     { Wave,   Snake,   Fade,   PingPong,    Bounce,   Flash,   Rainbow,   Random,   Gravity,   Color,    White,         Off }; // Using int8_t, instead of LedState for size
+        int8_t stateSettings_[numOptions_] = {All,   All,     All,    All,         All,      All,     All,       All,      All,       SetColor, SetBrightness, None}; // Using int8_t, instead of SettingType for size
         uint8_t curOption_ = 0;
         uint8_t prevOption_ = numOptions_ - 1;
 
         static const uint8_t numSettings_ = 5;
-        String settings_[numSettings_] = {"Brightness", "Speed", "Length", "Color 1", "Color 2"};
-        DisplayMode setState_[numSettings_] = {Brightness, Speed, Length, Primary, Secondary};
+        char settings_[numSettings_][6] = {"Brtns", "Spd", "Len", "Clr1", "Clr2"};
+        int8_t setState_[numSettings_] = {Brightness, Speed, Length, Primary, Secondary}; // Using int8_t, instead of DisplayMode for size
         uint8_t curSetting_ = 0;
         uint8_t prevSetting_ = numSettings_ - 1;
 

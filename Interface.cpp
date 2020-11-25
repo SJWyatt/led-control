@@ -53,25 +53,25 @@ void Interface::menu() {
         
         switch(state_) {
             case Menu:
-                lcd_->write("Menu");
+                lcd_->write("Mnu");
                 break;
             case Settings:
-                lcd_->write("Settings");
+                lcd_->write("Stgs");
                 break;
             case Brightness:
-                lcd_->print(settings_[0]);
+                lcd_->write(settings_[0]);
                 break;
             case Speed:
-                lcd_->print(settings_[1]);
+                lcd_->write(settings_[1]);
                 break;
             case Length:
-                lcd_->print(settings_[2]);
+                lcd_->write(settings_[2]);
                 break;
             case Primary:
-                lcd_->print(settings_[3]);
+                lcd_->write(settings_[3]);
                 break;
             case Secondary:
-                lcd_->print(settings_[4]);
+                lcd_->write(settings_[4]);
                 break;
             default:
                 break;
@@ -110,8 +110,8 @@ void Interface::options() {
             lcd_->write(32);
         }
 
-        lcd_->setCursor(1 + (14 - options_[curOption_].length()) / 2, 1);
-        lcd_->print(options_[curOption_]);
+        lcd_->setCursor(1 + (14 - sizeof(options_[curOption_])) / 2, 1);
+        lcd_->write(options_[curOption_]);
 
         prevOption_ = curOption_;
     }
@@ -161,8 +161,8 @@ void Interface::settings() {
             lcd_->write(32);
         }
 
-        lcd_->setCursor(1 + (14 - settings_[curSetting_].length()) / 2, 1);
-        lcd_->print(settings_[curSetting_]);
+        lcd_->setCursor(1 + (14 - sizeof(settings_[curSetting_])) / 2, 1);
+        lcd_->write(settings_[curSetting_]);
 
         prevSetting_ = curSetting_;
     }

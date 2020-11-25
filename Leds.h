@@ -38,6 +38,7 @@ class Leds {
         void setup();
 
         void set_state(LedState state);
+        void set_state(int8_t state);
         LedState get_state();
 
         // functions for one color
@@ -102,8 +103,8 @@ class Leds {
         void init_gravity();
         void gravity();
 
-        LedState state_ = Off;
-        uint64_t last_updated = 0;
+        int8_t state_ = Off; // Use int8_t instead of LedState for size.
+        uint32_t last_updated = 0;
     private:
         CRGB primary_ = CRGB(255, 0, 0);
         CRGB secondary_ = CRGB(0, 0, 255);
